@@ -1,0 +1,12 @@
+@model List<SupportTicket>
+@{ ViewData["Title"] = "Yêu cầu hỗ trợ"; }
+<p class="eyebrow">QUẢN LÝ YÊU CẦU</p>
+<h1 class="page-title">Danh sách yêu cầu</h1>
+<p class="lead">Tra cứu và theo dõi các yêu cầu hỗ trợ thuộc phạm vi tài khoản của bạn.</p>
+<div class="card"><form method="get" class="inline-form"><input name="q" type="text" maxlength="100" placeholder="Tìm theo tiêu đề..." style="min-width:280px" /><button type="submit">Tìm kiếm</button>@if(User.IsInRole(Roles.Student)){<a class="btn btn-green" asp-action="Create">Tạo yêu cầu</a>}</form></div>
+<div class="card"><div class="table-wrap"><table><thead><tr><th>Mã</th><th>Tiêu đề</th><th>Phân loại</th><th>Ưu tiên</th><th>Trạng thái</th><th>Quyền riêng tư</th><th></th></tr></thead><tbody>
+@foreach (var t in Model)
+{
+    <tr><td>#@t.Id</td><td><strong>@t.Title</strong><div class="mini-note">@t.CreatedUtc.ToString("dd/MM/yyyy") UTC</div></td><td>@UiLabels.Category(t.Category)</td><td><span class="badge @(t.Priority == "Urgent" ? "red" : t.Priority == "High" ? "orange" : "gray")">@UiLabels.Priority(t.Priority)</span></td><td><span class="badge @(t.Status == TicketStatuses.Closed ? "green" : t.Status == TicketStatuses.New ? "orange" : "")">@UiLabels.Status(t.Status)</span></td><td>@(t.IsSensitive ? "Nhạy cảm" : "Thông thường")</td><td><a class="btn btn-small btn-outline" asp-action="Details" asp-route-id="@t.Id">Chi tiết</a></td></tr>
+}
+</tbody></table></div>@if(Model.Count==0){<div class="empty">Chưa có yêu cầu nào trong phạm vi được phép xem.</div>}</div>

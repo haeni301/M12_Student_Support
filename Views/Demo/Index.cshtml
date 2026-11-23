@@ -1,0 +1,76 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Tổng quan";
+    var widthNew = Model.VisibleTotal > 0 ? 100.0 * Model.NewCount / Model.VisibleTotal : 0.0;
+    var widthActive = Model.VisibleTotal > 0 ? 100.0 * Model.ActiveCount / Model.VisibleTotal : 0.0;
+    var widthDone = Model.VisibleTotal > 0 ? 100.0 * Model.DoneCount / Model.VisibleTotal : 0.0;
+}
+<div class="hero">
+    <div>
+        <span class="hero-kicker">CỔNG DỊCH VỤ NGƯỜI HỌC</span>
+        <h1>Hỗ trợ người học trực tuyến</h1>
+        <p>Tiếp nhận, theo dõi tiến độ và phản hồi yêu cầu tại một nơi thống nhất.</p>
+        @if (User.IsInRole(Roles.Student))
+        {
+            <a class="btn" asp-controller="Tickets" asp-action="Create">Gửi yêu cầu mới</a>
+        }
+        else if (User.IsInRole(Roles.Intake))
+        {
+            <a class="btn" asp-controller="Intake" asp-action="Queue">Xem yêu cầu chờ tiếp nhận</a>
+        }
+        else if (User.IsInRole(Roles.Manager))
+        {
+            <a class="btn" asp-controller="Admin" asp-action="Queue">Quản lý phân công</a>
+        }
+        else if (User.IsInRole(Roles.Admin))
+        {
+            <a class="btn" asp-controller="Admin" asp-action="Audit">Xem nhật ký hệ thống</a>
+        }
+        else
+        {
+            <a class="btn" asp-controller="Tickets" asp-action="Index">Xem công việc được giao</a>
+        }
+    </div>
+</div>
+<div class="page-head">
+    <div><p class="eyebrow">DỮ LIỆU TRONG PHẠM VI TÀI KHOẢN</p><h1 class="page-title">Tổng quan yêu cầu hỗ trợ</h1></div>
+</div>
+<div class="grid">
+    <div class="kpi"><div class="caption">Tổng số yêu cầu</div><div class="number">@Model.VisibleTotal</div><div class="meta">Các yêu cầu được phép xem</div></div>
+    <div class="kpi"><div class="caption">Chờ tiếp nhận</div><div class="number">@Model.NewCount</div><div class="meta">Yêu cầu mới và chờ phân luồng</div></div>
+    <div class="kpi"><div class="caption">Đang xử lý</div><div class="number">@Model.ActiveCount</div><div class="meta">Đã phân công hoặc đang thực hiện</div></div>
+    <div class="kpi"><div class="caption">Đã có kết quả</div><div class="number">@Model.DoneCount</div><div class="meta">Đã giải quyết hoặc đã đóng</div></div>
+</div>
+<div class="two-col">
+    <section class="card">
+        <div class="space-between"><h2>Yêu cầu cập nhật gần đây</h2>@if (!User.IsInRole(Roles.Admin)) { <a asp-controller="Tickets" asp-action="Index" class="small">Xem tất cả</a> }</div>
+        <div class="statbar" aria-label="Tỷ lệ các nhóm trạng thái">
+            <span class="ok" style="width:@(widthDone.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+            <span style="background:#457baa;width:@(widthActive.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+            <span style="background:#d6a757;width:@(widthNew.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></span>
+        </div>
+        @if (Model.Recent.Count == 0)
+        {
+            <div class="empty">Hiện chưa có yêu cầu nào trong phạm vi tài khoản.</div>
+        }
+        @foreach (var ticket in Model.Recent)
+        {
+            <div class="activity">
+                <div class="dot"></div>
+                <div class="content">
+                    <p><a asp-controller="Tickets" asp-action="Details" asp-route-id="@ticket.Id"><strong>#@ticket.Id - @ticket.Title</strong></a></p>
+                    <span class="badge">@UiLabels.Status(ticket.Status)</span> <span class="small muted">Cập nhật: @ticket.UpdatedUtc.ToString("dd/MM/yyyy HH:mm") UTC</span>
+                </div>
+            </div>
+        }
+    </section>
+    <section class="card">
+        <h2>Quy trình tiếp nhận và giải quyết</h2>
+        <div class="timeline">
+            <div class="entry"><strong>Tiếp nhận yêu cầu</strong><div class="small muted">Ghi nhận thông tin và mã người học.</div></div>
+            <div class="entry"><strong>Phân loại và phân công</strong><div class="small muted">Xác định bộ phận, mức ưu tiên và người phụ trách.</div></div>
+            <div class="entry"><strong>Xử lý và phản hồi</strong><div class="small muted">Trao đổi, bổ sung hồ sơ, cập nhật kết quả xử lý.</div></div>
+            <div class="entry"><strong>Hoàn tất yêu cầu</strong><div class="small muted">Xác nhận kết quả, đóng hoặc mở lại khi cần thiết.</div></div>
+        </div>
+    </section>
+</div>

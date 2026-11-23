@@ -1,0 +1,15 @@
+M12 v2 – static acceptance report (not a compilation or runtime test)
+PASS  Required deliverable files
+PASS  Valid JSON: appsettings.json
+PASS  Valid JSON: Properties/launchSettings.json
+PASS  No unsafe Html.Raw calls in Razor
+PASS  All POST forms protected via global AutoValidateAntiforgery
+PASS  New queues/transfer/status methods are present
+PASS  Student code FK declared
+PASS  Files written outside wwwroot
+PASS  Actual denied access is audited
+PASS  30 documented test cases
+PASS  Original demo is Development-only
+PASS  Role revalidation uses database
+PASS  M12 HTTPS launch profile
+STATIC: 13/13 checks. RUNTIME/SQL: NOT TESTED.

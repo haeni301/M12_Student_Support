@@ -1,0 +1,17 @@
+digraph G {
+ graph [bgcolor="transparent",rankdir=LR,pad="0.25",nodesep="0.24",ranksep="0.45",fontname="DejaVu Sans",splines=ortho];
+ node [fontname="DejaVu Sans",shape=box,style="rounded,filled",color="#BDCCDF",fillcolor="#F5F8FC",fontcolor="#173456",penwidth=1.6,fontsize=10,margin="0.14,0.18"];
+ edge [color="#6E91B7",penwidth=1.8,arrowsize=.7];
+ new [label="NEW\nSinh viên",fillcolor="#FFF1DA",color="#F1BD71"];
+ routed [label="ROUTED\nIntake",fillcolor="#E9F2FF"];
+ assigned [label="ASSIGNED\nManager",fillcolor="#E9F2FF"];
+ progress [label="IN PROGRESS\nStaff",fillcolor="#E9F2FF"];
+ resolved [label="RESOLVED\nCó kết quả",fillcolor="#E4FAF0",color="#A2DBC3"];
+ closed [label="CLOSED\nXác nhận",fillcolor="#D2F4E6",color="#72CBB2"];
+ reopen [label="REOPENED\nSinh viên",fillcolor="#FFECF0",color="#ECB7C4"];
+ new->routed->assigned->progress->resolved->closed;
+ resolved->reopen [color="#C46B86"];
+ closed->reopen [color="#C46B86"];
+ reopen->assigned [color="#C46B86"];
+ assigned->routed [color="#CB9A55",constraint=false];
+}

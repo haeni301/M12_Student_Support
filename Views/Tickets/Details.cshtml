@@ -1,0 +1,103 @@
+@model SupportTicket
+@{
+    ViewData["Title"] = $"Yêu cầu #{Model.Id}";
+    bool owner = User.IsInRole(Roles.Student);
+    bool handler = User.IsInRole(Roles.Staff);
+    bool manager = User.IsInRole(Roles.Manager);
+}
+<div class="space-between wrap"><div><p class="eyebrow">CHI TIẾT YÊU CẦU · #@Model.Id</p><h1 class="page-title">@Model.Title</h1><p class="lead">Tạo lúc @Model.CreatedUtc.ToString("dd/MM/yyyy HH:mm") UTC · Mã SV: <span class="code">@Model.StudentCode</span></p></div><span class="badge @(Model.Status == TicketStatuses.Closed ? "green" : Model.Status == TicketStatuses.New ? "orange" : "")">@UiLabels.Status(Model.Status)</span></div>
+<div class="card">
+    <div class="space-between"><h2>Tiến độ giải quyết</h2><span class="badge">Trạng thái: @UiLabels.Status(Model.Status)</span></div>
+    <div class="workflow">
+        <div class="step @(Model.Status == TicketStatuses.New ? "active" : "")"><span class="circle">1</span><strong>Tiếp nhận</strong><small>Mới</small></div>
+        <div class="step @(Model.Status == TicketStatuses.Routed ? "active" : "")"><span class="circle">2</span><strong>Phân loại</strong><small>Đã chuyển</small></div>
+        <div class="step @(Model.Status == TicketStatuses.Assigned ? "active" : "")"><span class="circle">3</span><strong>Phân công</strong><small>Đã giao</small></div>
+        <div class="step @(Model.Status == TicketStatuses.InProgress ? "active" : "")"><span class="circle">4</span><strong>Xử lý</strong><small>Đang thực hiện</small></div>
+        <div class="step @(Model.Status == TicketStatuses.Resolved ? "active" : "")"><span class="circle">5</span><strong>Kết quả</strong><small>Đã có kết quả</small></div>
+        <div class="step @(Model.Status == TicketStatuses.Closed ? "active" : "")"><span class="circle">6</span><strong>Đóng</strong><small>Hoàn tất</small></div>
+        <div class="step @(Model.Status == TicketStatuses.Reopened ? "active" : "")"><span class="circle">7</span><strong>Mở lại</strong><small>Xử lý lại</small></div>
+    </div>
+</div>
+<div class="two-col">
+    <div>
+        <div class="card">
+            <h2>Nội dung yêu cầu</h2>
+            <div class="flex wrap"><span class="badge">@UiLabels.Category(Model.Category)</span><span class="badge @(Model.Priority == "Urgent" ? "red" : Model.Priority == "High" ? "orange" : "gray")">@UiLabels.Priority(Model.Priority)</span>@if(Model.IsSensitive){<span class="badge red">Nội dung nhạy cảm</span>}</div>
+            <p class="detail-description">@Model.Description</p>
+            <div class="divider"></div>
+            <div class="formrow"><div><strong>Người học</strong><p class="small muted">@ViewBag.Student (@Model.StudentCode)</p></div><div><strong>Đơn vị xử lý</strong><p class="small muted">@(ViewBag.Department ?? "Đang chờ tiếp nhận")</p></div></div>
+            <div class="formrow"><div><strong>Nhân viên phụ trách</strong><p class="small muted">@(ViewBag.Staff ?? "Chưa được phân công")</p></div><div><strong>Cập nhật lần cuối</strong><p class="small muted">@Model.UpdatedUtc.ToString("dd/MM/yyyy HH:mm") UTC</p></div></div>
+            @if (!string.IsNullOrWhiteSpace(Model.ResolutionSummary))
+            {
+                <div class="notice" style="margin-top:12px"><strong>Kết quả xử lý</strong><p style="margin:6px 0 0;white-space:pre-wrap">@Model.ResolutionSummary</p></div>
+            }
+        </div>
+        <div class="card">
+            <h2>Trao đổi và phản hồi</h2>
+            @if (Model.Comments.Count == 0) { <p class="muted">Chưa có phản hồi. Nội dung sẽ xuất hiện tại đây.</p> }
+            @foreach (var c in Model.Comments.OrderBy(x => x.CreatedUtc))
+            {
+                <div class="comment"><p class="detail-description">@c.Body</p><span class="small muted">Người gửi #@c.AuthorId · @c.CreatedUtc.ToString("dd/MM/yyyy HH:mm") UTC</span></div>
+            }
+            @if (Model.Status != TicketStatuses.Closed)
+            {
+                <form asp-action="Comment" method="post"><input type="hidden" name="id" value="@Model.Id" /><div class="field"><label for="body">Phản hồi mới</label><textarea name="body" id="body" maxlength="1000" required placeholder="Nhập nội dung phản hồi..."></textarea></div><button type="submit">Gửi phản hồi</button></form>
+            }
+            else { <p class="small muted">Ticket đã đóng: mở lại trước khi thêm phản hồi.</p> }
+        </div>
+        <div class="card">
+            <h2>Tài liệu đính kèm</h2>
+            <p class="muted small">Định dạng hỗ trợ: PDF, PNG, JPG, TXT. Dung lượng tối đa 5 MB mỗi tệp.</p>
+            @if (Model.Attachments.Count == 0) { <div class="empty">Chưa có tệp đính kèm</div> }
+            @foreach (var f in Model.Attachments.OrderByDescending(x => x.CreatedUtc))
+            {
+                <div class="activity"><span class="dot" aria-hidden="true"></span><div class="content"><a asp-action="Download" asp-route-id="@f.Id"><strong>@f.OriginalName</strong></a><div class="small muted">@f.FileSize bytes · @f.CreatedUtc.ToString("dd/MM/yyyy HH:mm") UTC</div></div></div>
+            }
+            @if (Model.Status != TicketStatuses.Closed)
+            {
+                <form asp-action="Upload" method="post" enctype="multipart/form-data"><input type="hidden" name="TicketId" value="@Model.Id" /><div class="field"><label for="File">Chọn tệp an toàn</label><input type="file" name="File" id="File" accept=".pdf,.png,.jpg,.jpeg,.txt" required /></div><button class="btn-green" type="submit">Tải tệp lên</button></form>
+            }
+        </div>
+    </div>
+    <div>
+        <div class="card">
+            <h2>Cập nhật xử lý</h2>
+            @if (handler && (Model.Status == TicketStatuses.Assigned || Model.Status == TicketStatuses.Reopened))
+            {
+                <form asp-action="Status" method="post"><input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="Status" value="InProgress" /><button class="btn-green" type="submit">Bắt đầu xử lý</button></form>
+            }
+            @if (handler && Model.Status == TicketStatuses.InProgress)
+            {
+                <form asp-action="Status" method="post"><input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="Status" value="Resolved" /><div class="field"><label for="Resolution">Kết quả giải quyết (bắt buộc)</label><textarea id="Resolution" name="Resolution" minlength="10" maxlength="1500" required placeholder="Trình bày cách xử lý và kết quả rõ ràng..."></textarea></div><button class="btn-green" type="submit">Hoàn tất xử lý</button></form>
+            }
+            @if ((owner || manager) && Model.Status == TicketStatuses.Resolved)
+            {
+                <form asp-action="Close" method="post"><input type="hidden" name="id" value="@Model.Id" /><button class="btn-green" type="submit">Xác nhận đóng yêu cầu</button></form>
+            }
+            @if (owner && (Model.Status == TicketStatuses.Closed || Model.Status == TicketStatuses.Resolved))
+            {
+                <form asp-action="Reopen" method="post" style="margin-top:14px"><input name="id" type="hidden" value="@Model.Id" /><div class="field"><label for="reason">Chưa hài lòng? Nêu lý do mở lại</label><input type="text" name="reason" id="reason" minlength="5" maxlength="400" required /></div><button class="btn-outline" type="submit">Mở lại yêu cầu</button></form>
+            }
+            @if (Model.Status == TicketStatuses.New) { <p class="small muted">Đang chờ nhân viên Intake phân loại và chuyển đơn vị.</p> }
+            else if (Model.Status == TicketStatuses.Routed) { <p class="small muted">Đang chờ Manager phân công nhân viên.</p> }
+            else if (Model.Status == TicketStatuses.Closed) { <p class="small muted">Yêu cầu đã đóng; sinh viên có thể mở lại nếu cần.</p> }
+            else if (Model.Status == TicketStatuses.Resolved && !owner && !manager) { <p class="small muted">Đã có kết quả, chờ sinh viên hoặc quản lý xác nhận đóng.</p> }
+            
+        </div>
+        <div class="card">
+            <h2>Lịch sử xử lý</h2>
+            <div class="timeline">
+                @foreach (var h in Model.History.OrderByDescending(x => x.CreatedUtc))
+                {
+                    <div class="entry"><strong>@h.Event</strong><div class="small muted">@h.CreatedUtc.ToString("dd/MM/yyyy HH:mm") UTC · User #@h.ActorId</div>
+                        @if (h.FromStatus != null || h.ToStatus != null) { <div class="small">@h.FromStatus → <strong>@h.ToStatus</strong></div> }
+                        @if (h.FromDepartmentId != h.ToDepartmentId) { <div class="small">Đơn vị: @h.FromDepartmentId → @h.ToDepartmentId</div> }
+                        @if (!string.IsNullOrWhiteSpace(h.Note)) { <div class="small detail-description">@h.Note</div> }
+                    </div>
+                }
+            </div>
+            @if (Model.History.Count == 0) { <p class="small muted">Ticket cũ chưa có lịch sử nghiệp vụ; các hành động mới sẽ được lưu.</p> }
+        </div>
+        
+    </div>
+</div>

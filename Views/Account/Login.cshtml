@@ -1,0 +1,13 @@
+@model LoginInput
+@{ ViewData["Title"] = "Đăng nhập"; }
+<div class="card hero-login">
+    <p class="eyebrow">CỔNG THÔNG TIN NGƯỜI HỌC</p><h1 class="page-title">Đăng nhập hệ thống</h1>
+    <p class="lead">Đăng nhập để gửi yêu cầu, theo dõi tiến độ và nhận phản hồi từ bộ phận phụ trách.</p>
+    <div asp-validation-summary="All" class="danger-text"></div>
+    <form asp-action="Login" method="post">
+        <div class="field"><label asp-for="Username">Tài khoản</label><input asp-for="Username" autocomplete="username" placeholder="Nhập tên tài khoản" required /></div>
+        <div class="field"><label asp-for="Password">Mật khẩu</label><input asp-for="Password" type="password" autocomplete="current-password" required /></div>
+        <button type="submit" style="width:100%;margin-top:15px">Đăng nhập</button>
+    </form>
+    <p class="small muted" style="margin-top:20px">Vui lòng không cung cấp mật khẩu cho người khác.</p>
+</div>

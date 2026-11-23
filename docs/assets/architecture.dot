@@ -1,0 +1,13 @@
+digraph G {
+ graph [bgcolor="transparent",rankdir=LR,pad="0.28",nodesep="0.3",ranksep="0.6",fontname="DejaVu Sans",splines=polyline];
+ node [fontname="DejaVu Sans",shape=box,style="rounded,filled",color="#C8D8E8",fillcolor="#F7FAFF",fontcolor="#132E51",penwidth=1.4,fontsize=11,margin="0.20,0.14"];
+ edge [color="#6E93BF",penwidth=1.7,arrowsize=0.7];
+ users [label="5 vai trò\nStudent · Intake\nStaff · Manager · Admin",fillcolor="#14375C",fontcolor="white",color="#14375C"];
+ mvc [label="ASP.NET Core MVC\nCookie + CSRF + RBAC",fillcolor="#E1ECFC"];
+ sec [label="SecurityService\nOwnership · Department\nAudit DENY / ALLOW",fillcolor="#DAF5EF",color="#8CDCC8"];
+ ef [label="Entity Framework Core\nParameterized LINQ",fillcolor="#E1ECFC"];
+ db [label="SQL Server\nProfiles · Tickets · History\nAttachments · Audits",fillcolor="#14375C",fontcolor="white",color="#14375C"];
+ vault [label="Secure File Vault\nOutside wwwroot\n5 MB + signature check",fillcolor="#FFF0D8",color="#F1D0A5"];
+ users->mvc->sec->ef->db;
+ mvc->vault [color="#18A18B"];
+}

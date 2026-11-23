@@ -1,0 +1,37 @@
+@model List<SupportTicket>
+@{
+    ViewData["Title"] = "Bảng phân công";
+    var staff = ViewBag.Staff as List<AppUser> ?? new List<AppUser>();
+    var departments = ViewBag.Departments as List<Department> ?? new List<Department>();
+}
+<p class="eyebrow">QUẢN LÝ BỘ PHẬN</p>
+<h1 class="page-title">Phân công và chuyển bộ phận</h1>
+<p class="lead">Phân công nhân viên phụ trách và điều chuyển yêu cầu đến đơn vị phù hợp.</p>
+<div class="card">
+    <div class="table-wrap"><table><thead><tr><th>Yêu cầu</th><th>Trạng thái</th><th>Nhân viên</th><th style="min-width:230px">Phân công</th><th style="min-width:240px">Chuyển bộ phận</th></tr></thead><tbody>
+    @foreach (var t in Model)
+    {
+        <tr>
+            <td><a asp-controller="Tickets" asp-action="Details" asp-route-id="@t.Id"><strong>#@t.Id · @t.Title</strong></a><div class="mini-note">@t.StudentCode · @UiLabels.Priority(t.Priority) @(t.IsSensitive ? "Nhạy cảm" : "")</div></td>
+            <td><span class="badge">@UiLabels.Status(t.Status)</span></td>
+            <td>@(t.AssignedStaffId?.ToString() ?? "—")</td>
+            <td>
+                @if (t.Status is TicketStatuses.Routed or TicketStatuses.Reopened or TicketStatuses.Assigned)
+                {
+                    <form asp-action="Assign" method="post"><input type="hidden" name="ticketId" value="@t.Id" /><select name="staffId" aria-label="Nhân viên" required><option value="">Chọn nhân viên</option>@foreach (var u in staff) { <option value="@u.Id">@u.UserName</option> }</select><button class="btn-small" type="submit">Phân công</button></form>
+                }
+                else { <span class="muted small">Không trong trạng thái giao</span> }
+            </td>
+            <td>
+                @if (t.Status != TicketStatuses.Closed)
+                {
+                    <form asp-action="Transfer" method="post"><input type="hidden" name="TicketId" value="@t.Id" /><select name="DepartmentId" aria-label="Bộ phận đích" required><option value="">Chuyển đến</option>@foreach (var d in departments) { <option value="@d.Id">@d.Name</option> }</select><input name="Reason" minlength="5" maxlength="400" placeholder="Lý do chuyển (5–400 ký tự)" required /><button class="btn-small btn-outline" type="submit">Chuyển đơn vị</button></form>
+                }
+                else { <span class="muted small">Đã đóng</span> }
+            </td>
+        </tr>
+    }
+    </tbody></table></div>
+    @if (Model.Count == 0) { <div class="empty">Chưa có yêu cầu nào trong bộ phận của bạn.</div> }
+</div>
+

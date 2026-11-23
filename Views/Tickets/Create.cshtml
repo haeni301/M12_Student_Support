@@ -1,0 +1,13 @@
+@model TicketInput
+@{ ViewData["Title"] = "Tạo yêu cầu"; }
+<p class="eyebrow">GỬI YÊU CẦU</p><h1 class="page-title">Gửi yêu cầu hỗ trợ mới</h1>
+<p class="lead">Vui lòng điền đầy đủ thông tin để bộ phận tiếp nhận có thể hỗ trợ nhanh chóng.</p>
+<div class="card form-card"><div asp-validation-summary="All" class="danger-text"></div>
+<form asp-action="Create" method="post">
+    <div class="field"><label asp-for="Title">Tiêu đề yêu cầu</label><input asp-for="Title" placeholder="Ví dụ: Cần xác nhận kết quả học phần" /><span asp-validation-for="Title" class="danger-text"></span></div>
+    <div class="field"><label asp-for="Description">Nội dung cần hỗ trợ</label><textarea asp-for="Description" rows="6" placeholder="Mô tả rõ vấn đề, thời điểm, mong muốn được xử lý..."></textarea><span asp-validation-for="Description" class="danger-text"></span></div>
+    <div class="field"><label asp-for="Category">Nhóm yêu cầu dự kiến</label><select asp-for="Category"><option value="Academic">Học tập</option><option value="Finance">Tài chính</option><option value="Other">Khác</option></select><small>Bộ phận tiếp nhận sẽ xác nhận và phân luồng.</small></div>
+    <div class="field"><label class="checkbox-row"><input asp-for="IsSensitive" /> Có thông tin nhạy cảm — giới hạn quyền xem</label></div>
+    <div class="warning">Bạn có thể bổ sung tài liệu đính kèm sau khi tạo yêu cầu. Không gửi mật khẩu hoặc thông tin đăng nhập.</div>
+    <button class="btn-green" type="submit">Gửi yêu cầu</button>
+</form></div>

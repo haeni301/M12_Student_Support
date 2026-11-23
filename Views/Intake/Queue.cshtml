@@ -1,0 +1,29 @@
+@model List<SupportTicket>
+@{
+    ViewData["Title"] = "Hàng đợi tiếp nhận";
+    var departments = ViewBag.Departments as List<Department> ?? new List<Department>();
+}
+<p class="eyebrow">BỘ PHẬN TIẾP NHẬN</p>
+<h1 class="page-title">Tiếp nhận và phân loại</h1>
+<p class="lead">Kiểm tra nội dung, xác định mức ưu tiên và chuyển yêu cầu tới bộ phận có trách nhiệm.</p>
+<div class="card">
+    <h2>Hàng đợi trung tâm <span class="badge orange">@Model.Count chờ xử lý</span></h2>
+    @if (Model.Count == 0) { <div class="empty">Hiện không có yêu cầu chờ phân loại.</div> }
+    @foreach (var t in Model)
+    {
+        <div class="mini-form">
+            <div class="space-between"><strong><a asp-controller="Tickets" asp-action="Details" asp-route-id="@t.Id">#@t.Id · @t.Title</a></strong><span class="badge orange">@UiLabels.Status(t.Status)</span></div>
+            <p class="small muted">Mã SV: @t.StudentCode · Tạo lúc: @t.CreatedUtc.ToString("dd/MM/yyyy HH:mm") UTC @(t.IsSensitive ? " · Nhạy cảm" : "")</p>
+            <form asp-action="Triage" method="post">
+                <input type="hidden" name="TicketId" value="@t.Id" />
+                <div class="formrow">
+                    <div class="field"><label for="cat-@t.Id">Danh mục</label><select name="Category" id="cat-@t.Id"><option value="Academic" selected="@(t.Category == "Academic")">Học tập</option><option value="Finance" selected="@(t.Category == "Finance")">Tài chính</option><option value="Other" selected="@(t.Category == "Other")">Khác</option></select></div>
+                    <div class="field"><label for="prio-@t.Id">Mức ưu tiên</label><select name="Priority" id="prio-@t.Id"><option value="Low">Thấp</option><option value="Normal" selected>Bình thường</option><option value="High">Cao</option><option value="Urgent">Khẩn cấp</option></select></div>
+                </div>
+                <div class="field"><label for="dept-@t.Id">Chuyển tới bộ phận</label><select name="DepartmentId" id="dept-@t.Id" required><option value="">Chọn bộ phận xử lý</option>@foreach (var dep in departments) { <option value="@dep.Id">@dep.Name</option> }</select></div>
+                <div class="field"><label for="note-@t.Id">Ghi chú nghiệp vụ (không bắt buộc)</label><input id="note-@t.Id" name="Note" maxlength="400" placeholder="Lý do phân loại / hướng xử lý" /></div>
+                <button class="btn-green" type="submit">Xác nhận và chuyển đơn vị</button>
+            </form>
+        </div>
+    }
+</div>

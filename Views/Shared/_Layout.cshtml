@@ -1,0 +1,103 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var isLoggedIn = User.Identity?.IsAuthenticated == true;
+    var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#153e70" />
+    <title>@ViewData["Title"] | Cổng hỗ trợ người học</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="portal">
+        <div class="institution-strip">
+            <div class="container-wide institution-inner">
+                <span>ĐẠI HỌC KINH TẾ QUỐC DÂN</span>
+                <span class="institution-note">HỆ THỐNG THỰC HÀNH · MODULE 12</span>
+            </div>
+        </div>
+        <header class="site-header">
+            <div class="container-wide brand-row">
+                <a asp-controller="Demo" asp-action="Index" class="brand" aria-label="Về trang tổng quan">
+                    <span class="brand-seal" aria-hidden="true">M12</span>
+                    <span class="brand-titles">
+                        <span class="brand-eyebrow">CỔNG THÔNG TIN HỖ TRỢ</span>
+                        <strong>TRUNG TÂM HỖ TRỢ NGƯỜI HỌC</strong>
+                        <span>Tiếp nhận và quản lý yêu cầu hỗ trợ trực tuyến</span>
+                    </span>
+                </a>
+                @if (isLoggedIn)
+                {
+                    <div class="header-user" aria-label="Tài khoản đang đăng nhập">
+                        <div class="avatar" aria-hidden="true">@((User.Identity?.Name ?? "U").Substring(0, 1).ToUpperInvariant())</div>
+                        <div class="user-meta"><strong>@User.Identity?.Name</strong><span>@UiLabels.Role(userRole)</span></div>
+                        <form asp-controller="Account" asp-action="Logout" method="post"><button type="submit" class="btn-logout">Đăng xuất</button></form>
+                    </div>
+                }
+                else
+                {
+                    <a class="btn btn-outline header-signin" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                }
+            </div>
+        </header>
+        <nav class="main-nav" aria-label="Điều hướng chính">
+            <div class="container-wide nav-inner">
+                @if (isLoggedIn)
+                {
+                    <a class="navlink @(currentController == "Demo" ? "active" : "")" asp-controller="Demo" asp-action="Index">Tổng quan</a>
+                    @if (!User.IsInRole(Roles.Admin))
+                    {
+                        <a class="navlink @(currentController == "Tickets" && currentAction != "Create" ? "active" : "")" asp-controller="Tickets" asp-action="Index">Danh sách yêu cầu</a>
+                    }
+                    @if (User.IsInRole(Roles.Student))
+                    {
+                        <a class="navlink @(currentController == "Tickets" && currentAction == "Create" ? "active" : "")" asp-controller="Tickets" asp-action="Create">Gửi yêu cầu</a>
+                    }
+                    @if (User.IsInRole(Roles.Intake))
+                    {
+                        <a class="navlink @(currentController == "Intake" ? "active" : "")" asp-controller="Intake" asp-action="Queue">Tiếp nhận &amp; phân loại</a>
+                    }
+                    @if (User.IsInRole(Roles.Manager))
+                    {
+                        <a class="navlink @(currentController == "Admin" && currentAction == "Queue" ? "active" : "")" asp-controller="Admin" asp-action="Queue">Phân công yêu cầu</a>
+                    }
+                    @if (User.IsInRole(Roles.Admin))
+                    {
+                        <a class="navlink @(currentController == "Admin" && currentAction == "Audit" ? "active" : "")" asp-controller="Admin" asp-action="Audit">Nhật ký bảo mật</a>
+                        <a class="navlink @(currentController == "Admin" && currentAction == "Users" ? "active" : "")" asp-controller="Admin" asp-action="Users">Quản lý tài khoản</a>
+                    }
+                    <a class="navlink @(currentController == "Account" && currentAction == "Password" ? "active" : "")" asp-controller="Account" asp-action="Password">Đổi mật khẩu</a>
+                }
+                else
+                {
+                    <a class="navlink @(currentController == "Account" ? "active" : "")" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                }
+            </div>
+        </nav>
+        <div class="breadcrumb-wrap">
+            <div class="container-wide breadcrumb"><a asp-controller="Demo" asp-action="Index">Trang chủ</a><span class="breadcrumb-separator">/</span><span>@ViewData["Title"]</span></div>
+        </div>
+        <main class="page container-wide" id="main-content">
+            @if (TempData["Success"] is string success)
+            {
+                <div class="notice" role="status">@success</div>
+            }
+            @RenderBody()
+        </main>
+        <footer class="site-footer">
+            <div class="container-wide footer-inner">
+                <div><strong>Trung tâm hỗ trợ người học</strong><span>Tiếp nhận · Phân loại · Xử lý · Phản hồi</span></div>
+                <p>Hệ thống thực hành học phần Bảo mật cơ sở dữ liệu (M12). Không phải cổng dịch vụ chính thức của nhà trường.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

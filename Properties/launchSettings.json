@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "M12-HTTPS-Demo": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DEMO_SEED": "true"
+      },
+      "applicationUrl": "https://localhost:50900;http://localhost:50901"
+    }
+  }
+}
